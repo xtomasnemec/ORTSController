@@ -4,6 +4,17 @@ import time
 import config
 import displaydriver as lcd
 
+
+def get_json(url):
+    response = requests.get(url)
+    try:
+        return response.json(), response.status_code
+    finally:
+        try:
+            response.close()
+        except Exception:
+            pass
+
 def connect_wifi():
     ssid = config.ssid
     password = config.password
@@ -19,9 +30,11 @@ def connect_wifi():
 
 def test_connection():
     try:
-        response = requests.get(config.ip)
-        if response.status_code == 200:
+        status = get_json(config.ip)
+        if status == 200:
             lcd.simple_print("Spojeno s OpenRails")
         else:
             lcd.simple_print("Spojeni nenavazano!")
+    except Exception as exc:
+        lcd.simple_print("Chyba pripojeni", str(exc))
     time.sleep(2)

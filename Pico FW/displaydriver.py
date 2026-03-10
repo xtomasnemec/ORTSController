@@ -1,23 +1,23 @@
-from lcd_i2c import LCD
-from machine import I2C, Pin
+import config
 
 def init():
-    I2C_ADDR = config.I2C_ADDR
-    NUM_ROWS = 4
-    NUM_COLS = 20
-
-    i2c = config.i2c
     lcd = config.lcd
 
     lcd.begin()
     lcd.display()
     lcd.backlight()
     lcd.no_blink()
-    lcd.print("Hello World")
+    simple_print("ORTSController")
 
-def simple_print(text):
+def simple_print(*lines):
+    lcd = config.lcd
     lcd.clear()
-    lcd.print(text)
+    if not lines:
+        return
+    text_lines = [str(x) for x in lines if x is not None]
+    # Většina lcd_i2c driverů podporuje '\n' jako nový řádek.
+    joined = "\n".join(s[: config.NUM_COLS] for s in text_lines[: config.NUM_ROWS])
+    lcd.print(joined)
 
 def main_screen():
-    lcd.clear()
+    config.lcd.clear()
