@@ -2,21 +2,36 @@ import displaydriver as lcd
 import api
 import config
 import buttons
+import time
+
 
 lcd.init()
+lcd.lcd_print("   ORTSController")
 
 api.connect_wifi()
 api.test_connection()
 
-try:
-	train = api.get_player_train()
-	if isinstance(train, dict) and train:
-		name = train.get("Name") or train.get("name") or train.get("DisplayName") or train.get("displayName")
-		if name:
-			lcd.simple_print("Vlak hrace:", str(name))
+buttons.init()
+
+last_display_ms = time.ticks_ms()
+
+while True:
+	try:
+		buttons.poll()
+	except Exception as e:
+		print("Buttons poll error:", e)
+
+	try:
+		now = time.ticks_ms()
+		if api.is_connected() and time.ticks_diff(now, last_display_ms) >= getattr(config, "DISPLAY_REFRESH_MS", 500):
+			lcd.ORTSscreen()
+			last_display_ms = now
 		else:
-			lcd.simple_print("Vlak hrace OK")
-	else:
-		lcd.simple_print("Vlak hrace", "nenalezen")
-except Exception as exc:
-	lcd.simple_print("Chyba API", str(exc))
+			if not api.is_connected() and time.ticks_diff(now, last_display_ms) >= getattr(config, "DISPLAY_REFRESH_MS", 500):
+				lcd.lcd_print("No WiFi", "Connecting...")
+				last_display_ms = now
+	except Exception as e:
+		print("LCD error:", e)
+
+	# keep display responsive but don't starve button polling
+	time.sleep_ms(getattr(config, "BUTTON_POLL_MS", 10))
