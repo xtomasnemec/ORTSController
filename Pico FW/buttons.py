@@ -36,11 +36,11 @@ def _read_button(button):
 
 # active-low buttons
 horn_button = _make_button(getattr(config, "HORN_PIN", 1))
-bell_button = _make_button(getattr(config, "BELL_PIN", None))
+bell_button = _make_button(getattr(config, "BELL_PIN", 2))
 enable_button = _make_button(getattr(config, "ENABLE_PIN", None))
 
 # debounce timing
-DEBOUNCE_MS = 50
+DEBOUNCE_MS = 20
 
 _buttons = {}
 
